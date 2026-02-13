@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande de Valentine</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- AOS.js pour les animations d'apparition -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Animate.css pour les effets supplémentaires -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Canvas Confetti pour l'effet de victoire -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* Dégradé animé de fond */
+        body {
+            background: linear-gradient(-45deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d4baff);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Glassmorphism styles */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+        }
+        /* Flottement doux sur l'image principale */
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        /* Jauge d'amour */
+        .love-bar {
+            width: 0%;
+            height: 20px;
+            background: linear-gradient(to right, #ff69b4, #ff1493);
+            border-radius: 10px;
+            transition: width 2s ease-in-out;
+        }
+        .love-bar.full {
+            width: 1000%; /* Simule 1000% en dépassant, pour l'effet comique */
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .glass {
+                margin: 10px;
+                padding: 20px;
+            }
+            .float img {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div id="main-content" class="glass p-8 max-w-lg w-full text-center">
+        <!-- Image principale avec effet de flottement -->
+        <img src="photo_principale.jpg" alt="Photo principale" class="float mx-auto mb-6 rounded-full w-48 h-48 object-cover" data-aos="fade-in">
+
+        <!-- Question initiale -->
+        <h1 id="question" class="text-2xl font-bold text-white mb-4 animate__animated animate__bounceIn" data-aos="fade-up">Veux-tu être ma Valentine ?</h1>
+
+        <!-- Jauge d'amour -->
+        <div class="mb-4">
+            <p class="text-white mb-2">Niveau d'Amour :</p>
+            <div class="bg-gray-300 rounded-full h-5 overflow-hidden">
+                <div id="love-bar" class="love-bar"></div>
+            </div>
+            <p id="love-text" class="text-white mt-1">0%</p>
+        </div>
+
+        <!-- Boutons -->
+        <div class="flex justify-center space-x-4">
+            <button id="yes-btn" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105" data-aos="fade-left">OUI</button>
+            <button id="no-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all duration-300" data-aos="fade-right">NON</button>
+        </div>
+
+        <!-- Image triste (cachée initialement) -->
+        <img id="sad-img" src="photo_triste.jpg" alt="Photo triste" class="mx-auto mt-6 rounded-full w-32 h-32 object-cover hidden" data-aos="fade-in">
+    </div>
+
+    <!-- Contenu de victoire (caché initialement) -->
+    <div id="victory-content" class="glass p-8 max-w-lg w-full text-center hidden">
+        <h1 class="text-2xl font-bold text-white mb-4 animate__animated animate__tada">Félicitations ! Tu es ma Valentine !</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <img src="galerie1.jpg" alt="Galerie 1" class="rounded-lg w-full h-32 object-cover" data-aos="zoom-in">
+            <img src="galerie2.jpg" alt="Galerie 2" class="rounded-lg w-full h-32 object-cover" data-aos="zoom-in" data-aos-delay="200">
+            <img src="galerie3.jpg" alt="Galerie 3" class="rounded-lg w-full h-32 object-cover" data-aos="zoom-in" data-aos-delay="400">
+        </div>
+        <p id="scrolling-message" class="text-white text-lg animate__animated animate__slideInLeft">Je t'aime plus que tout ! ❤️❤️❤️</p>
+    </div>
+
+    <script>
+        // Initialisation d'AOS
+        AOS.init();
+
+        // Variables pour les interactions
+        let attempts = 0;
+        let moveInterval;
+        const questions = [
+            "Veux-tu être ma Valentine ?",
+            "Wa goliii aaaaah 3afaaaak ! 😢",
+            "waaa broojola at3amli chofi ki diri liha ! 🙏",
+            "wa mmiiii anbkiiii😭",
+            "safiii an3tik akhir forssaaa ! 💔"
+        ];
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+        const question = document.getElementById('question');
+        const sadImg = document.getElementById('sad-img');
+        const mainContent = document.getElementById('main-content');
+        const victoryContent = document.getElementById('victory-content');
+        const loveBar = document.getElementById('love-bar');
+        const loveText = document.getElementById('love-text');
+
+        // Fonction pour bouger le bouton NON
+        function moveNoBtn() {
+            const maxX = window.innerWidth - noBtn.offsetWidth;
+            const maxY = window.innerHeight - noBtn.offsetHeight;
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            noBtn.style.position = 'fixed'; // Utilise fixed pour éviter les problèmes de scroll
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
+        }
+
+        // Démarrer le mouvement quand la souris entre sur le bouton NON
+        noBtn.addEventListener('mouseenter', () => {
+            attempts++;
+            if (attempts < questions.length) {
+                question.textContent = questions[attempts];
+                yesBtn.style.transform = `scale(${1 + attempts * 0.1})`;
+                sadImg.classList.remove('hidden');
+            }
+            // Bouger le bouton toutes les 100ms tant que la souris est dessus
+            moveInterval = setInterval(moveNoBtn, 100);
+        });
+
+        // Arrêter le mouvement quand la souris sort du bouton NON
+        noBtn.addEventListener('mouseleave', () => {
+            clearInterval(moveInterval);
+        });
+
+        // Événement clic sur OUI
+        yesBtn.addEventListener('click', () => {
+            // Explosion de confettis
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            // Cacher le contenu principal et montrer la victoire
+            mainContent.classList.add('hidden');
+            victoryContent.classList.remove('hidden');
+
+            // Remplir la jauge d'amour à 1000%
+            loveBar.classList.add('full');
+            loveText.textContent = '1000%';
+
+            // Animation du message défilant (simple slide)
+            const scrollingMsg = document.getElementById('scrolling-message');
+            scrollingMsg.style.animation = 'slideInLeft 2s ease-in-out';
+        });
+
+        // Animation du message défilant (CSS ajouté dynamiquement si besoin)
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInLeft {
+                from { transform: translateX(-100%); }
+                to { transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
